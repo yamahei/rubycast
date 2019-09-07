@@ -1,0 +1,25 @@
+Chromecast command line and web control tool
+
+Requirements:
+- ruby
+- ffmpeg
+
+Installation:
+rubycast depends on some ruby gems, see Gemfile for dependencies
+You can simply install the dependencies with bundler :
+$ bundle install
+Then prefix your command with bundle :
+$ bundle exec ruby -I lib bin/rubycast.rb
+
+Usage:
+Chromecast need an HTTP server to get video from. To be able to play local video files, you need to launch rubycast HTTP server with :
+$ ruby -I lib bin/rubycast.rb --httpd
+The rubycast.rb HTTP server includes a small web interface that you can reach within your web browser : http://yourlocalip:8015/
+The explorer will map to /tmp by default, but you can define the root directory :
+$ ruby -I lib bin/rubycast.rb --httpd --root /media/Videos
+
+If you just want to stop/play/pause, you can use rubycast.rb as command line :
+$ ruby -I lib bin/rubycast.rb -c stop
+
+See the whole options with
+$ ruby -I lib bin/rubycast.rb -h
