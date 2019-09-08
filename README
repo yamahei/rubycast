@@ -23,3 +23,8 @@ $ ruby -I lib bin/rubycast.rb -c stop
 
 See the whole options with
 $ ruby -I lib bin/rubycast.rb -h
+
+References:
+lib/castv2.rb is based on Thibaut Séguy work:
+https://github.com/thibauts/node-castv2
+https://github.com/thibauts/node-castv2-client

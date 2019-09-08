@@ -3,6 +3,8 @@ require 'forwardable'
 require 'eventmachine'
 require 'cast_channel.pb'
 
+# Chromecast CASTV2 protocol ruby implementation
+
 module Castv2
 
   DEBUG = false
