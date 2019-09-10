@@ -11,6 +11,7 @@ module Castv2
 
   class Message
     attr_accessor :source_id, :destination_id, :namespace, :data_hash, :data
+
     def initialize(source_id, destination_id, namespace, data)
       @source_id = source_id
       @destination_id = destination_id
@@ -32,10 +33,10 @@ module Castv2
 
     def to_packet
       packet = {
-        protocol_version: 0, # CASTV2_1_0
-        source_id: @source_id,
-        destination_id: @destination_id,
-        namespace: @namespace
+          protocol_version: 0, # CASTV2_1_0
+          source_id: @source_id,
+          destination_id: @destination_id,
+          namespace: @namespace
       }
 
       packet[:payload_type] = 0 # STRING
@@ -43,7 +44,7 @@ module Castv2
 
       request = Extensions::Api::Cast_channel::CastMessage.new(packet)
       buf = request.encode
-      [buf.length].pack("L>")+buf
+      [buf.length].pack("L>") + buf
     end
 
     def self.from_packet(raw_data)
@@ -57,20 +58,21 @@ module Castv2
 
     def self.to_ostruct(hash)
       OpenStruct.new(hash.each_with_object({}) do |(key, val), memo|
-                       memo[key] = (case val
-                       when Hash
-                         to_ostruct(val)
-                       when Array
-                         val.map do |aval|
-                           if aval.is_a?(Hash)
-                             to_ostruct(aval)
-                           else
-                             aval
-                           end
-                         end
-                       else
-                         val
-                       end)
+        memo[key] = (
+        case val
+        when Hash
+          to_ostruct(val)
+        when Array
+          val.map do |aval|
+            if aval.is_a?(Hash)
+              to_ostruct(aval)
+            else
+              aval
+            end
+          end
+        else
+          val
+        end)
       end)
     end
 
@@ -87,14 +89,22 @@ module Castv2
     def initialize(*args)
       super
       @receive_channels = {}
+      @len = 0
+      @packet = ""
     end
 
     def receive_data(data)
-      len = data[0..3].unpack("L>").first
-      packet = data[4..(len+4)]
+      packet = ""
+      if @len == 0
+        @len = data[0..3].unpack("L>").first
+        packet = data[4..(@len + 4)]
+      else
+        packet = @packet + data
+      end
 
-      if data.length != len+4
-        raise "TODO multiple packets #{data.length} != #{len+4}"
+      if packet.length < @len
+        @packet = packet
+        return
       end
 
       message = Message.from_packet(packet)
@@ -105,6 +115,8 @@ module Castv2
       if receive_channel
         receive_channel.push(message)
       end
+      @packet = ""
+      @len = 0
     end
 
     def unbind
@@ -149,7 +161,7 @@ module Castv2
     end
 
     def on_receive(namespace, &block)
-      @receive_channels[namespace]||=EventMachine::Channel.new
+      @receive_channels[namespace] ||= EventMachine::Channel.new
       @receive_channels[namespace].subscribe block
     end
   end
@@ -192,11 +204,11 @@ module Castv2
     end
 
     def connect
-      self.send_data({ type: 'CONNECT' })
+      self.send_data({type: 'CONNECT'})
     end
 
     def disconnect
-      self.send_data({ type: 'CLOSE' })
+      self.send_data({type: 'CLOSE'})
     end
   end
 
@@ -247,7 +259,7 @@ module Castv2
     end
 
     def app_session(app_id, sessions)
-      sessions.select{|st| st.appId == app_id}.first
+      sessions.select { |st| st.appId == app_id }.first
     end
 
     def launch(app_id, &block)
@@ -299,11 +311,11 @@ module Castv2
 
     def load(media, options = {}, &block)
       req = {type: 'LOAD',
-             autoplay: options[:autoplay]||false,
-             currentTime: options[:currentTime]||0,
-             activeTrackIds: options[:activeTrackIds]||[],
-             repeatMode: options[:repeatMode]||"REPEAT_OFF"
-             }
+             autoplay: options[:autoplay] || false,
+             currentTime: options[:currentTime] || 0,
+             activeTrackIds: options[:activeTrackIds] || [],
+             repeatMode: options[:repeatMode] || "REPEAT_OFF"
+      }
 
       req[:media] = media
       self.request(req) do |data|
@@ -347,8 +359,8 @@ module Castv2
 
     def seek(current_time, &block)
       data = {
-        type: 'SEEK',
-        currentTime: current_time
+          type: 'SEEK',
+          currentTime: current_time
       }
       self.session_request(data, &block)
     end
@@ -356,6 +368,7 @@ module Castv2
 
   class Sender
     attr_accessor :source_id, :destination_id
+
     def initialize(client, source_id, destination_id)
       @client = client
       @source_id = source_id
@@ -369,6 +382,7 @@ module Castv2
 
   class Application < Sender
     attr_accessor :connection
+
     def self.app_id
       nil
     end
@@ -419,7 +433,7 @@ module Castv2
       @receiver.stop(@session.sessionId)
       @connection.disconnect
       if block
-       EM.add_timer(1) do
+        EM.add_timer(1) do
           block.call
         end
       end
