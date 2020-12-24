@@ -28,3 +28,17 @@ References:
 lib/castv2.rb is based on Thibaut Séguy work:
 https://github.com/thibauts/node-castv2
 https://github.com/thibauts/node-castv2-client
+
+
+^^^ Original document of [julbouln/rubycast](https://github.com/julbouln/rubycast) ^^^
+---------------------------------------------------------------------------------------
+vvv  Additional document of [yamahei/rubycast](https://github.com/yamahei/rubycast) vvv
+
+I add a command "googlehome.rb" to julbouln/rubycast.
+This command can let GoogleHome - on the same LAN - speak.
+and this can search GoogleHome by name.
+
+$ ruby -I lib bin/googlehome.rb --text="こんにちは" --name="ファミリー ルーム"
+
+See the whole options with
+$ ruby -I lib bin/googlehome.rb -h
